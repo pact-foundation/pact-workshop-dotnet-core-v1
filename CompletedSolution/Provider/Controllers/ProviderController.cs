@@ -17,7 +17,7 @@ namespace Provider.Controllers
             this._Configuration = configuration;
         }
 
-        // GET api/provider?validInt=[int]
+        // GET api/provider?validDateTime=[DateTime String]
         [HttpGet]
         public JsonResult Get(string validDateTime)
         {
