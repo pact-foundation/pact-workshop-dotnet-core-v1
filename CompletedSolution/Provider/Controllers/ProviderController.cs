@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
-namespace provider.Controllers
+namespace Provider.Controllers
 {
     [Route("api/[controller]")]
     public class ProviderController : Controller
