@@ -14,8 +14,7 @@ namespace Consumer
             if(args.Length <= 1)
             {
                 Console.WriteLine("-------------------");
-                Console.WriteLine($"Running consumer with args: dateTimeToValidate = {dateTimeToValidate}, baseUri = {baseUri}");
-                Console.WriteLine("To use with your own parameters:");
+                WritoutArgsUsed(dateTimeToValidate, baseUri);
                 WriteoutUsageInstructions();
                 Console.WriteLine("-------------------");
             }
@@ -24,7 +23,7 @@ namespace Consumer
                 dateTimeToValidate = args[0];
                 baseUri = args[1];
                 Console.WriteLine("-------------------");
-                Console.WriteLine($"Running consumer with args: dateTimeToValidate = {dateTimeToValidate}, baseUri = {baseUri}");
+                WritoutArgsUsed(dateTimeToValidate, baseUri);
                 Console.WriteLine("-------------------");
             }
 
@@ -49,8 +48,14 @@ namespace Consumer
             }
         }
 
+        static private void WritoutArgsUsed(string datetimeArg, string baseUriArg)
+        {
+            Console.WriteLine($"Running consumer with args: dateTimeToValidate = {datetimeArg}, baseUri = {baseUriArg}");
+        }
+
         static private void WriteoutUsageInstructions()
         {
+            Console.WriteLine("To use with your own parameters:");
             Console.WriteLine("Usage: dotnet run [DateTime To Validate] [Provider Api Uri]");
             Console.WriteLine("Usage Example: dotnet run 01/01/2018 http://localhost:9000");
         }
