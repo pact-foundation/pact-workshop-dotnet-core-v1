@@ -14,7 +14,7 @@ namespace Consumer
             if(args.Length <= 1)
             {
                 Console.WriteLine("-------------------");
-                WritoutArgsUsed(dateTimeToValidate, baseUri);
+                WriteoutArgsUsed(dateTimeToValidate, baseUri);
                 WriteoutUsageInstructions();
                 Console.WriteLine("-------------------");
             }
@@ -23,32 +23,18 @@ namespace Consumer
                 dateTimeToValidate = args[0];
                 baseUri = args[1];
                 Console.WriteLine("-------------------");
-                WritoutArgsUsed(dateTimeToValidate, baseUri);
+                WriteoutArgsUsed(dateTimeToValidate, baseUri);
                 Console.WriteLine("-------------------");
             }
 
             Console.WriteLine("Validating date...");
-            ValidateDateTimeUsingProviderApi(dateTimeToValidate, baseUri).GetAwaiter().GetResult();
+            var result = ConsumerApiClient.ValidateDateTimeUsingProviderApi(dateTimeToValidate, baseUri).GetAwaiter().GetResult();
+            var resultContentText = result.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            Console.WriteLine(resultContentText);
             Console.WriteLine("...Date validation complete. Goodbye.");
         }
 
-        static private async Task ValidateDateTimeUsingProviderApi(string dateTimeToValidate, string baseUri)
-        {
-            using (var client = new HttpClient { BaseAddress = new Uri(baseUri)})
-            {
-                try
-                {
-                    string response = await client.GetStringAsync($"/api/provider?validDateTime={dateTimeToValidate}");
-                    Console.WriteLine(response);
-                }
-                catch (System.Exception ex)
-                {
-                    throw new Exception("There was a problem connecting to Provider API.", ex);
-                }
-            }
-        }
-
-        static private void WritoutArgsUsed(string datetimeArg, string baseUriArg)
+        static private void WriteoutArgsUsed(string datetimeArg, string baseUriArg)
         {
             Console.WriteLine($"Running consumer with args: dateTimeToValidate = {datetimeArg}, baseUri = {baseUriArg}");
         }

@@ -20,7 +20,14 @@ namespace tests
         public ConsumerPactClassFixture()
         {
             // Using Spec version 2.0.0 more details at https://goo.gl/UrBSRc
-            PactBuilder = new PactBuilder(new PactConfig { SpecificationVersion = "2.0.0", PactDir = @"..\pacts", LogDir = @"c:\temp\logs" });
+            var pactConfig = new PactConfig
+            {
+                SpecificationVersion = "2.0.0",
+                PactDir = @"..\..\..\..\..\pacts",
+                LogDir = @".\pact_logs"
+            };
+
+            PactBuilder = new PactBuilder(pactConfig);
 
             PactBuilder.ServiceConsumer("Consumer")
                        .HasPactWith("Provider");

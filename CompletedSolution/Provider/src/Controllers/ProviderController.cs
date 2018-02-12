@@ -19,11 +19,11 @@ namespace Provider.Controllers
 
         // GET api/provider?validDateTime=[DateTime String]
         [HttpGet]
-        public JsonResult Get(string validDateTime)
+        public IActionResult Get(string validDateTime)
         {
             if(String.IsNullOrEmpty(validDateTime))
             {
-                return new JsonResult(BadRequest(new { message = "validDateTime is required" }));
+                return BadRequest(new { message = "validDateTime is required" });
             }
 
             if(this.GetPactProviderThrowNotFoundFlag())
@@ -39,7 +39,7 @@ namespace Provider.Controllers
             }
             catch(Exception ex)
             {
-                return new JsonResult(BadRequest(new { message = "validDateTime is not a date or time" }));
+                return BadRequest(new { message = "validDateTime is not a date or time" });
             }
 
             return new JsonResult(new {
