@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -26,7 +27,7 @@ namespace Provider.Controllers
                 return BadRequest(new { message = "validDateTime is required" });
             }
 
-            if(this.GetPactProviderThrowNotFoundFlag())
+            if(this.DoesDataExist())
             {
                 return new JsonResult(NotFound());
             }
@@ -48,13 +49,12 @@ namespace Provider.Controllers
             });
         }
 
-        private bool GetPactProviderThrowNotFoundFlag()
+        private bool DoesDataExist()
         {
-            bool pactProviderShouldThrowNotFound = false;
-            string pactProviderShouldThrowNotFoundEnvVarString = this._Configuration["PACT_PROVIDER_SHOULD_THROW_404"];
-            Boolean.TryParse(pactProviderShouldThrowNotFoundEnvVarString, out pactProviderShouldThrowNotFound);
+            string path = Path.Combine(Directory.GetCurrentDirectory(), @"../../../../../data");
+            string pathWithFile = Path.Combine(path, "somedata.txt");
 
-            return pactProviderShouldThrowNotFound;
+            return System.IO.File.Exists(pathWithFile);
         }
     }
 }

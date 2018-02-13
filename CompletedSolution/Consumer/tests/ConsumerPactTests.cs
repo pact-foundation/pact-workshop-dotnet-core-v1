@@ -24,7 +24,8 @@ namespace tests
         {
             // Arange
             var invalidRequestMessage = "validDateTime is not a date or time";
-            _mockProviderService.UponReceiving("A invalid GET request for Date Validation")
+            _mockProviderService.Given("There is data")
+                                .UponReceiving("A invalid GET request for Date Validation")
                                 .With(new ProviderServiceRequest 
                                 {
                                     Method = HttpVerb.Get,

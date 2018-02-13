@@ -8,6 +8,7 @@
   "interactions": [
     {
       "description": "A invalid GET request for Date Validation",
+      "providerState": "There is data",
       "request": {
         "method": "get",
         "path": "/api/provider",
