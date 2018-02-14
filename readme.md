@@ -308,7 +308,7 @@ thing](https://www.youtube.com/watch?v=biW9BbWJtQU).
 
 #### Step 3.2.2 Tearing Down the Pact Mock HTTP Server & Generating the Pact File
 
-If the tests were to use the Class Fixture above as is right now the Mock Server might be left running once the tests have finished and worst no Pact file
+If the tests were to use the Class Fixture above as is right now the Mock Server might be left running once the tests have finished and worse no Pact file
 would be created - so we wouldn't be able to verify our mocks with the Provider API!
 
 
