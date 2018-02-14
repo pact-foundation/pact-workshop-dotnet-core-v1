@@ -27,9 +27,9 @@ namespace Provider.Controllers
                 return BadRequest(new { message = "validDateTime is required" });
             }
 
-            if(this.DoesDataExist())
+            if(this.DataMissing())
             {
-                return new JsonResult(NotFound());
+                return NotFound();
             }
 
             DateTime parsedDateTime;
@@ -45,16 +45,16 @@ namespace Provider.Controllers
 
             return new JsonResult(new {
                 test = "NO",
-                validDateTime = parsedDateTime
+                validDateTime = parsedDateTime.ToString("dd-MM-yyyy HH:mm:ss")
             });
         }
 
-        private bool DoesDataExist()
+        private bool DataMissing()
         {
-            string path = Path.Combine(Directory.GetCurrentDirectory(), @"../../../../../data");
+            string path = Path.Combine(Directory.GetCurrentDirectory(), @"../../data");
             string pathWithFile = Path.Combine(path, "somedata.txt");
 
-            return System.IO.File.Exists(pathWithFile);
+            return !System.IO.File.Exists(pathWithFile);
         }
     }
 }

@@ -34,11 +34,13 @@ namespace tests.Middleware
 
         private void RemoveAllData()
         {
-            var path = Path.Combine(Directory.GetCurrentDirectory(), @"../../../../../data");
-            var deletePath = Path.Combine(path, @"/data", "somedata.txt");
+            string path = Path.Combine(Directory.GetCurrentDirectory(), @"../../../../../data");
+            var deletePath = Path.Combine(path, "somedata.txt");
 
-            Console.WriteLine($"Delete data");
-            File.Delete(deletePath);
+            if (File.Exists(deletePath))
+            {
+                File.Delete(deletePath);
+            }
         }
 
         private void AddData()
@@ -46,8 +48,10 @@ namespace tests.Middleware
             string path = Path.Combine(Directory.GetCurrentDirectory(), @"../../../../../data");
             var writePath = Path.Combine(path, "somedata.txt");
 
-            Console.WriteLine($"Writing data");
-            File.Create(writePath);
+            if (!File.Exists(writePath))
+            {
+                File.Create(writePath);
+            }
         }
 
         public async Task Invoke(HttpContext context)
