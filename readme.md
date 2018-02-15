@@ -496,7 +496,7 @@ All the methods above on running the test will generate a *Pact file* which will
 by the Provider, API to make the same requests against the actual API to ensure the responses
 match the expectations of the Consumer.
 
-#### Step 3.3.2 - Completing Your First Test
+#### Step 3.3.2 - Completing Your First Consumer Test
 
 With the mocked response setup the rest of the test can be treated like any other test
 you would write; perform an action and assert the result:
