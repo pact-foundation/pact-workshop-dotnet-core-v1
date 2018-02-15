@@ -7,7 +7,6 @@ using PactNet.Infrastructure.Outputters;
 using tests.XUnitHelpers;
 using Xunit;
 using Xunit.Abstractions;
-using Provider;
 
 namespace tests
 {
