@@ -157,11 +157,11 @@ Pact works by placing a mock HTTP server between the consumer and provider(s) in
 side and replay this actions on the provider side to verify them. So before we can write Pact tests we need to setup and configure this mock server.
 This server will be used for all the tests in our Consumer test project.
 
-XUnit shares common resources in a few different ways. For this workshop we shall create a [Class Fixture](https://xunit.github.io/docs/shared-context.html)
+XUnit shares common resources in a few different ways. For this workshop, we shall create a [Class Fixture](https://xunit.github.io/docs/shared-context.html)
 which will share our mock HTTP server between our consumer tests. Start by creating a file and class called ```ConsumerPactClassFixture.cs``` in the root of
 the Consumer test project (```[RepositoryRoot]/YourSolution/Consumer/tests```). It should look like:
 
-```
+```csharp
 using System;
 using Xunit;
 
@@ -182,9 +182,9 @@ namespace tests
 The [PactBuilder](https://github.com/pact-foundation/pact-net/blob/master/PactNet/PactBuilder.cs) is the class used to build out the configuration we
 need for Pact which defines among other things where to find our mock HTTP server.
 
-First at the top of your class add some properties which will be used to store your instance of PactBuilder and store Mock HTTP Server properties:
+First, at the top of your class add some properties which will be used to store your instance of PactBuilder and store Mock HTTP Server properties:
 
-```
+```csharp
 using System;
 using Xunit;
 using PactNet;
@@ -210,7 +210,7 @@ namespace tests
 Above we have setup some properties which ultimately say our Mock HTTP Server will be hosted at ```http://localhost:9222```. With that in place the next
 step is to add a constructor to start the other properties starting with PactBuilder:
 
-```
+```csharp
 using System;
 using Xunit;
 using PactNet;
@@ -261,7 +261,7 @@ The constructor is doing a couple of things right now:
 
 The final thing it needs to do is create an instance of our Mock HTTP service using the now created configuration:
 
-```
+```csharp
 using System;
 using Xunit;
 using PactNet;
@@ -316,7 +316,7 @@ It is always a good idea in your tests to teardown any resources used in them at
 of the Mock HTTP Server which will at the same time generate our Pact file. To do this update your ConsumerPactClassFixture class to conform to IDisposable
 and clean up the server using ```PactBuilder.Build()```:
 
-```
+```csharp
 using System;
 using Xunit;
 using PactNet;
@@ -384,6 +384,162 @@ namespace tests
 
 The ```PactBuilder.Build()``` method will teardown the Mock HTTP Server it uses for tests and generates the Pact File used for verifying mocks with
 providers. It will always overwrite the Pact file with the results of the latest test run.
+
+### Step 3.3 - Creating Your First Pact Test
+
+With the class fixture created to manage the Mock HTTP Server update the test class added
+by the ```dotnet create xunit``` command to be named ```ConsumerPactTests``` and update
+the file name to match. With that done update the class to conform to the IClassFixture
+interface and create an instance of your class fixture in the constructor.
+
+```csharp
+using System;
+using Xunit;
+using PactNet.Mocks.MockHttpService;
+using PactNet.Mocks.MockHttpService.Models;
+using Consumer;
+using System.Collections.Generic;
+
+namespace tests
+{
+    public class ConsumerPactTests : IClassFixture<ConsumerPactClassFixture>
+    {
+        private IMockProviderService _mockProviderService;
+        private string _mockProviderServiceBaseUri;
+
+        public ConsumerPactTests(ConsumerPactClassFixture fixture)
+        {
+            _mockProviderService = fixture.MockProviderService;
+            _mockProviderService.ClearInteractions(); //NOTE: Clears any previously registered interactions before the test is run
+            _mockProviderServiceBaseUri = fixture.MockProviderServiceBaseUri;
+        }
+    }
+}
+```
+
+With an instance of our Mock HTTP Server in our test class, we can add the first test. 
+All the Pact tests added during this workshop will follow the same three steps:
+
+1. Mock out an interaction with the Provider API.
+2. Interact with the mocked out interaction using our Consumer code.
+3. Assert the result is what we expected.
+
+For the first test, we shall check that if we pass an invalid date string to our Consumer
+that the Provider API will return a ```400``` response and a message explaining why the
+request is invalid.
+
+#### Step 3.3.1 - Mocking an Interaction with the Provider
+
+Create a test in ```ConsumerPactTests``` called ```ItHandlesInvalidDateParam()``` and
+using the code below mock out our HTTP request to the Provider API which will return a
+```400```:
+
+```csharp
+[Fact]
+public void ItHandlesInvalidDateParam()
+{
+    // Arange
+    var invalidRequestMessage = "validDateTime is not a date or time";
+    _mockProviderService.Given("There is data")
+                        .UponReceiving("A invalid GET request for Date Validation with invalid date parameter")
+                        .With(new ProviderServiceRequest 
+                        {
+                            Method = HttpVerb.Get,
+                            Path = "/api/provider",
+                            Query = "validDateTime=lolz"
+                        })
+                        .WillRespondWith(new ProviderServiceResponse {
+                            Status = 400,
+                            Headers = new Dictionary<string, object>
+                            {
+                                { "Content-Type", "application/json; charset=utf-8" }
+                            },
+                            Body = new 
+                            {
+                                message = invalidRequestMessage
+                            }
+                        });
+}
+```
+
+The code above uses the ```_mockProviderService``` to setup our mocked response using Pact.
+Breaking it down by the different method calls:
+
+* ```Given("")```
+
+This workshop will talk more about the Given method when writing the Provider API Pact test
+but for now, it is important to know that the Given method manages the state that your test
+requires to be in place before running. In our example, we require the Provider API to
+have some data. The Provider API Pact test will parse these given statements and map
+them to methods which will execute code to setup the required state(s).
+
+* ```UponReceiving("")```
+
+When this method executes it will add a description of what the mocked HTTP request
+represents to the Pact file. It is important to be accurate here as this message is what
+will be shown when a test fails to help a developer understand what went wrong.
+
+* ```With(ProviderServiceRequest)```
+
+Here is where the configuration for your mocked HTTP request is added. In our example
+we have added what *Method* the request is (Get) the *Path* the request is made to 
+(api/provider/) and the query parameters which in this test is our invalid date time
+string (validDateTime=lolz).
+
+* ```WillRespondWith(ProviderServiceResponse)```
+
+Finally, in this method, we define what we expect back from the Provider API for our mocked
+request. In our case a ```400``` HTTP Code and a message in the body explaining what the
+failure was. 
+
+All the methods above on running the test will generate a *Pact file* which will be used
+by the Provider, API to make the same requests against the actual API to ensure the responses
+match the expectations of the Consumer.
+
+#### Step 3.3.2 - Completing Your First Test
+
+With the mocked response setup the rest of the test can be treated like any other test
+you would write; perform an action and assert the result:
+
+```csharp
+[Fact]
+public void ItHandlesInvalidDateParam()
+{
+    // Arange
+    var invalidRequestMessage = "validDateTime is not a date or time";
+    _mockProviderService.Given("There is data")
+                        .UponReceiving("A invalid GET request for Date Validation with invalid date parameter")
+                        .With(new ProviderServiceRequest 
+                        {
+                            Method = HttpVerb.Get,
+                            Path = "/api/provider",
+                            Query = "validDateTime=lolz"
+                        })
+                        .WillRespondWith(new ProviderServiceResponse {
+                            Status = 400,
+                            Headers = new Dictionary<string, object>
+                            {
+                                { "Content-Type", "application/json; charset=utf-8" }
+                            },
+                            Body = new 
+                            {
+                                message = invalidRequestMessage
+                            }
+                        });
+
+    // Act
+    var result = ConsumerApiClient.ValidateDateTimeUsingProviderApi("lolz", _mockProviderServiceBaseUri).GetAwaiter().GetResult();
+    var resultBodyText = result.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+
+    // Assert
+    Assert.Contains(invalidRequestMessage, resultBodyText);
+}
+```
+
+With the updated test above it will make a request using our Consumer client and get the
+mocked interaction back which we assert on to confirm the error message is the one we
+expect.
+
 
 # Copyright Notice & Licence 
 
