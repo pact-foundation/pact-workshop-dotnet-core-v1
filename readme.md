@@ -142,6 +142,16 @@ dotnet add package PactNet.Linux.x64 --version 2.2.1
 dotnet add package PactNet.Linux.x86 --version 2.2.1
 ```
 
+Finally you will need to add a reference to the Consumer Client project src code. So again
+at the same command line type and run the command:
+
+```
+dotnet add reference ../src/consumer.csproj
+```
+
+This will allow you to access public code from the Consumer Client project which you will
+need to do to test the code!
+
 Once this command runs successfully you will have in ```[RepositoryRoot]/YourSolution/Consumer/tests``` an empty .NET Core XUnit Project with Pact
 and we can begin to setup Pact!
 
@@ -572,9 +582,42 @@ generated. Take a moment to have a look at what it contains which is a JSON repr
 of the mocked our requests your test made.
 
 With your Consumer Pact Test passing and your new Pact file we can now create the Provider
-Pact test.
+Pact test which will validate your mocked responses match actual responses from the
+Provider API.
 
 ## Step 4 - Testing the Provider Project with Pact
+
+Navigate to the ```[RepositoryRoot]/YourSolution/Provider/tests``` directory in your
+command line and create another new XUnit project by running the command
+```dotnet create xunit```. Once again you will also need to add the correct version of
+the PactNet package using one of the command line commands below:
+
+```
+# Windows
+dotnet add package PactNet.Windows --version 2.2.1
+
+# OSX
+dotnet add package PactNet.OSX --version 2.2.1
+
+# Linux
+dotnet add package PactNet.Linux.x64 --version 2.2.1
+# Or...
+dotnet add package PactNet.Linux.x86 --version 2.2.1
+```
+
+Finally your Provider Pact Test project will need to run its own web server during tests
+which will be covered in more detail in the next step but for now, lets get the
+```Microsoft.AspNetCore.All``` package which we will need to run this server. Run the 
+command below to add it to your project:
+
+```
+dotnet add package Microsoft.AspNetCore.All --version 2.0.3
+```
+
+With all the packages added to our Provider API test project, we are ready to move onto
+the next step; creating an HTTP Server to manage test environment state.
+
+### Step 4.1 - Creating a Provider State HTTP Server
 
 
 
