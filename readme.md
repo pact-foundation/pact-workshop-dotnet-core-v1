@@ -385,7 +385,7 @@ namespace tests
 The ```PactBuilder.Build()``` method will teardown the Mock HTTP Server it uses for tests and generates the Pact File used for verifying mocks with
 providers. It will always overwrite the Pact file with the results of the latest test run.
 
-### Step 3.3 - Creating Your First Pact Test
+### Step 3.3 - Creating Your First Pact Test for the Consumer Client
 
 With the class fixture created to manage the Mock HTTP Server update the test class added
 by the ```dotnet create xunit``` command to be named ```ConsumerPactTests``` and update
@@ -539,6 +539,43 @@ public void ItHandlesInvalidDateParam()
 With the updated test above it will make a request using our Consumer client and get the
 mocked interaction back which we assert on to confirm the error message is the one we
 expect.
+
+Now all that is left to do is run your test. From the
+```[RepositoryRoot]/YourSolution/Consumer/tests/``` directory run the ```dotnet test```
+command at the command line. If successful you should see some output like this:
+
+```
+YourPC:tests thomas.shipley$ dotnet test
+Build started, please wait...
+Build completed.
+
+Test run for pact-workshop-dotnet-core-v1/YourSolution/Consumer/tests/bin/Debug/netcoreapp2.0/tests.dll(.NETCoreApp,Version=v2.0)
+Microsoft (R) Test Execution Command Line Tool Version 15.3.0-preview-20170628-02
+Copyright (c) Microsoft Corporation.  All rights reserved.
+
+Starting test execution, please wait...
+[xUnit.net 00:00:00.8359010]   Discovering: tests
+[xUnit.net 00:00:00.9334030]   Discovered:  tests
+[xUnit.net 00:00:00.9399270]   Starting:    tests
+[2018-02-15 11:24:24] INFO  WEBrick 1.3.1
+[2018-02-15 11:24:24] INFO  ruby 2.2.2 (2015-04-13) [x86_64-darwin13]
+[2018-02-15 11:24:24] INFO  WEBrick::HTTPServer#start: pid=57443 port=9222
+[xUnit.net 00:00:03.4053200]   Finished:    tests
+
+Total tests: 1. Passed: 1. Failed: 0. Skipped: 0.
+Test Run Successful.
+Test execution time: 1.4248 Seconds
+```
+
+If you now navigate to ```[RepositoryRoot]/pacts``` you will see the pact file your test
+generated. Take a moment to have a look at what it contains which is a JSON representation
+of the mocked our requests your test made.
+
+With your Consumer Pact Test passing and your new Pact file we can now create the Provider
+Pact test.
+
+## Step 4 - Testing the Provider Project with Pact
+
 
 
 # Copyright Notice & Licence 
