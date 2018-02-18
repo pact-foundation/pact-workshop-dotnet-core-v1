@@ -38,7 +38,7 @@ namespace Provider.Controllers
             {
                 parsedDateTime = DateTime.Parse(validDateTime);
             }
-            catch(Exception ex)
+            catch(Exception)
             {
                 return BadRequest(new { message = "validDateTime is not a date or time" });
             }
