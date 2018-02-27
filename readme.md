@@ -68,7 +68,7 @@ Once that has completed run ```dotnet run``` this will start your the Provider A
 the URL below in your browser:
 
 ```
-http://http://localhost:9000/api/provider?validDateTime=05/01/2018
+http://localhost:9000/api/provider?validDateTime=05/01/2018
 ```
 
 If your request is successful you should see in your browser:
