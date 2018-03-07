@@ -398,7 +398,7 @@ providers. It will always overwrite the Pact file with the results of the latest
 ### Step 3.3 - Creating Your First Pact Test for the Consumer Client
 
 With the class fixture created to manage the Mock HTTP Server update the test class added
-by the ```dotnet create xunit``` command to be named ```ConsumerPactTests``` and update
+by the ```dotnet new xunit``` command to be named ```ConsumerPactTests``` and update
 the file name to match. With that done update the class to conform to the IClassFixture
 interface and create an instance of your class fixture in the constructor.
 
