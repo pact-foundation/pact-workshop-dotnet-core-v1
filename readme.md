@@ -589,7 +589,7 @@ Provider API.
 
 Navigate to the ```[RepositoryRoot]/YourSolution/Provider/tests``` directory in your
 command line and create another new XUnit project by running the command
-```dotnet create xunit```. Once again you will also need to add the correct version of
+```dotnet new xunit```. Once again you will also need to add the correct version of
 the PactNet package using one of the command line commands below:
 
 ```
