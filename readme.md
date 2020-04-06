@@ -1,3 +1,44 @@
+
+# Running on Pactflow
+
+Install the [Pact CLI tools](https://github.com/pact-foundation/pact-ruby-standalone/) and ensure they are on your `PATH`.
+
+The below commands are designed for a Linux/OSX environment, please translate for use on Windows/PowerShell as necessary:
+
+1. Sign up to a Pactflow account at https://pactflow.io/register.
+1. Grab a **read/write** API token from the "Settings > API Tokens" page
+1. Export the following into your shell before running
+    ```
+    export PACT_BROKER_TOKEN=<insert token here> # do not a user/email/password here e.g. it should like something like 8Axvelr123xCq98h1
+    export PACT_BROKER_HOST=<insert host here> # e.g. https://foo.pact.dius.com.au
+    ```
+1. Run the consumer tests
+    ```
+    cd CompletedSolution/Consumer/tests
+    dotnet restore
+    dotnet test
+    ```
+1. Publish the contracts to Pactflow (ensure you're back in the projects' root directory)
+    ```
+    pact-broker publish --consumer-app-version 1.0.0 --broker-base-url $PACT_BROKER_HOST --broker-token $PACT_BROKER_TOKEN ./pacts/consumer-provider.json --tag master
+    ```
+1. Run the [can-i-deploy](https://docs.pact.io/pact_broker/can_i_deploy) check for the consumer
+
+    ```
+    pact-broker can-i-deploy --pacticipant Consumer --latest --broker-base-url $PACT_BROKER_HOST --broker-token $PACT_BROKER_TOKEN
+    ```
+1. Run the provider tests
+    ```
+    cd CompletedSolution/Consumer/tests
+    dotnet restore
+    dotnet test
+    ```
+1. Run the [can-i-deploy](https://docs.pact.io/pact_broker/can_i_deploy) check for the provider
+
+    ```
+    pact-broker can-i-deploy --pacticipant Provider --latest --broker-base-url $PACT_BROKER_HOST --broker-token $PACT_BROKER_TOKEN
+    ```
+
 # Example .NET Core Project for Pact Workshop
 
 When writing a lot of small services, testing the interactions between these becomes a major headache.
@@ -427,7 +468,7 @@ namespace tests
 }
 ```
 
-With an instance of our Mock HTTP Server in our test class, we can add the first test. 
+With an instance of our Mock HTTP Server in our test class, we can add the first test.
 All the Pact tests added during this workshop will follow the same three steps:
 
 1. Mock out an interaction with the Provider API.
@@ -452,7 +493,7 @@ public void ItHandlesInvalidDateParam()
     var invalidRequestMessage = "validDateTime is not a date or time";
     _mockProviderService.Given("There is data")
                         .UponReceiving("A invalid GET request for Date Validation with invalid date parameter")
-                        .With(new ProviderServiceRequest 
+                        .With(new ProviderServiceRequest
                         {
                             Method = HttpVerb.Get,
                             Path = "/api/provider",
@@ -464,7 +505,7 @@ public void ItHandlesInvalidDateParam()
                             {
                                 { "Content-Type", "application/json; charset=utf-8" }
                             },
-                            Body = new 
+                            Body = new
                             {
                                 message = invalidRequestMessage
                             }
@@ -492,7 +533,7 @@ will be shown when a test fails to help a developer understand what went wrong.
 * ```With(ProviderServiceRequest)```
 
 Here is where the configuration for your mocked HTTP request is added. In our example
-we have added what *Method* the request is (Get) the *Path* the request is made to 
+we have added what *Method* the request is (Get) the *Path* the request is made to
 (api/provider/) and the query parameters which in this test is our invalid date time
 string (validDateTime=lolz).
 
@@ -500,7 +541,7 @@ string (validDateTime=lolz).
 
 Finally, in this method, we define what we expect back from the Provider API for our mocked
 request. In our case a ```400``` HTTP Code and a message in the body explaining what the
-failure was. 
+failure was.
 
 All the methods above on running the test will generate a *Pact file* which will be used
 by the Provider, API to make the same requests against the actual API to ensure the responses
@@ -519,7 +560,7 @@ public void ItHandlesInvalidDateParam()
     var invalidRequestMessage = "validDateTime is not a date or time";
     _mockProviderService.Given("There is data")
                         .UponReceiving("A invalid GET request for Date Validation with invalid date parameter")
-                        .With(new ProviderServiceRequest 
+                        .With(new ProviderServiceRequest
                         {
                             Method = HttpVerb.Get,
                             Path = "/api/provider",
@@ -531,7 +572,7 @@ public void ItHandlesInvalidDateParam()
                             {
                                 { "Content-Type", "application/json; charset=utf-8" }
                             },
-                            Body = new 
+                            Body = new
                             {
                                 message = invalidRequestMessage
                             }
@@ -607,7 +648,7 @@ dotnet add package PactNet.Linux.x86 --version 2.2.1
 
 Finally your Provider Pact Test project will need to run its own web server during tests
 which will be covered in more detail in the next step but for now, let's get the
-```Microsoft.AspNetCore.All``` package which we will need to run this server. Run the 
+```Microsoft.AspNetCore.All``` package which we will need to run this server. Run the
 command below to add it to your project:
 
 ```
@@ -682,7 +723,7 @@ request. This might be actions like ensuring a user is in the database or a user
 permission to access a resource.
 
 Above we took the first step to create this API for our tests to access but currently
-it both doesn't compile and even if we removed the ```app.UseMiddleware``` line it 
+it both doesn't compile and even if we removed the ```app.UseMiddleware``` line it
 wouldn't do anything. We need to create a way for the API to manage the states required
 by our tests. We will do this by creating a piece of middleware (similar to a controller)
 that handles requests to the path ```/provider-states```.
@@ -1092,7 +1133,7 @@ API is hosted. Next, the ```ServiceProvider``` method takes the name of the Prov
 verified in our case **Provider** and a URI to where it is hosted. Then the
 ```HonoursPactWith()``` method tells Pact the name of the consumer that generated the Pact
 which needs to be verified with the Provider API - in our case **Consumer**.  Finally, in
-our workshop, we point Pact directly to the Pact File (instead of hosting elsewhere) and 
+our workshop, we point Pact directly to the Pact File (instead of hosting elsewhere) and
 call ```Verify``` to test that the mocked request and responses in the Pact file for our
 Consumer and Provider match the real responses from the Provider API.
 
@@ -1195,19 +1236,19 @@ info: Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager[0]
 info: Microsoft.AspNetCore.Hosting.Internal.WebHost[1]
       Request starting HTTP/1.1 POST http://localhost:9001/provider-states application/json 74
 info: Microsoft.AspNetCore.Hosting.Internal.WebHost[2]
-      Request finished in 24.308ms 200 
+      Request finished in 24.308ms 200
 info: Microsoft.AspNetCore.Hosting.Internal.WebHost[1]
       Request starting HTTP/1.1 POST http://localhost:9001/provider-states application/json 80
 info: Microsoft.AspNetCore.Hosting.Internal.WebHost[2]
-      Request finished in 1.849ms 200 
+      Request finished in 1.849ms 200
 info: Microsoft.AspNetCore.Hosting.Internal.WebHost[1]
       Request starting HTTP/1.1 POST http://localhost:9001/provider-states application/json 74
 info: Microsoft.AspNetCore.Hosting.Internal.WebHost[2]
-      Request finished in 0.476ms 200 
+      Request finished in 0.476ms 200
 info: Microsoft.AspNetCore.Hosting.Internal.WebHost[1]
       Request starting HTTP/1.1 POST http://localhost:9001/provider-states application/json 74
 info: Microsoft.AspNetCore.Hosting.Internal.WebHost[2]
-      Request finished in 0.217ms 200 
+      Request finished in 0.217ms 200
 [xUnit.net 00:00:06.8562100]   Finished:    tests
 
 Total tests: 1. Passed: 1. Failed: 0. Skipped: 0.
@@ -1232,13 +1273,13 @@ which could also be implemented:
 For the final step of this workshop take some time to update your Consumer Pact tests
 to implement one or all of the test cases above. Once done generate a new Pact file
 by running your Consumer Pact tests and validate your Pact file against the Provider
-API. 
+API.
 
 If you are struggling take a look at
 ```[RepositoryRoot]/CompletedSolution/Consumer/tests``` which contains the solutions
 to each test case. But perhaps give it a go first!
 
-# Copyright Notice & Licence 
+# Copyright Notice & Licence
 
 This workshop is a port of the [Ruby Project for Pact Workshop](https://github.com/DiUS/pact-workshop-ruby-v2) with some
 minor modifications. It is covered under the same Apache License 2.0 as the original Ruby workshop.

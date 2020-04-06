@@ -47,7 +47,10 @@ namespace tests
                                 },
 
                 // Output verbose verification logs to the test output
-                Verbose = true
+                Verbose = true,
+                PublishVerificationResults = true,
+                ProviderVersion = "2.4.1-f3842db9e603d7",
+
             };
 
             //Act / Assert
@@ -55,7 +58,9 @@ namespace tests
             pactVerifier.ProviderState($"{_pactServiceUri}/provider-states")
                 .ServiceProvider("Provider", _providerUri)
                 .HonoursPactWith("Consumer")
-                .PactUri(@"..\..\..\..\..\pacts\consumer-provider.json")
+                .PactBroker("https://dius.pact.dius.com.au",
+                    uriOptions: new PactUriOptions(System.Environment.GetEnvironmentVariable("PACT_BROKER_TOKEN")),
+                    consumerVersionTags: new List<string> { "master" })
                 .Verify();
         }
 
