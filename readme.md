@@ -1,5 +1,8 @@
 # Example .NET Core Project for Pact Workshop
 
+* auto-gen TOC:
+{:toc}
+
 When writing a lot of small services, testing the interactions between these becomes a major headache.
 That's the problem Pact is trying to solve.
 
