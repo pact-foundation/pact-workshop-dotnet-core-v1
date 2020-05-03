@@ -1,7 +1,25 @@
 # Example .NET Core Project for Pact Workshop
 
-* auto-gen TOC:
-{:toc}
+- [Prerequisites](#prerequisites)
+- [Workshop Steps](#workshop-steps)
+  - [Step 1 - Fork the Repo & Explore the Code!](#step-1---fork-the-repo--explore-the-code)
+    - [CompletedSolution](#completedsolution)
+    - [YourSolution](#yoursolution)
+  - [Step 2 - Understanding The Consumer Project](#step-2---understanding-the-consumer-project)
+    - [Step 2.1 - Start the Provider API Locally](#step-21---start-the-provider-api-locally)
+    - [Step 2.2 - Execute the Consumer](#step-22---execute-the-consumer)
+  - [Step 3 - Testing the Consumer Project with Pact](#step-3---testing-the-consumer-project-with-pact)
+    - [Step 3.1 - Creating a Test Project for Consumer with XUnit](#step-31---creating-a-test-project-for-consumer-with-xunit)
+    - [Step 3.2 - Configuring the Mock HTTP Pact Server on the Consumer](#step-32---configuring-the-mock-http-pact-server-on-the-consumer)
+    - [Step 3.3 - Creating Your First Pact Test for the Consumer Client](#step-33---creating-your-first-pact-test-for-the-consumer-client)
+  - [Step 4 - Testing the Provider Project with Pact](#step-4---testing-the-provider-project-with-pact)
+    - [Step 4.1 - Creating a Provider State HTTP Server](#step-41---creating-a-provider-state-http-server)
+    - [Step 4.2 - Creating the Provider API Pact Test](#step-42---creating-the-provider-api-pact-test)
+    - [Step 4.2.1 - Creating the XUnitOutput Class](#step-421---creating-the-xunitoutput-class)
+    - [Step 4.3 - Running Your Provider API Pact Test](#step-43---running-your-provider-api-pact-test)
+    - [Step 4.3.1 - Start Your Provider API Locally](#step-431---start-your-provider-api-locally)
+    - [Step 4.3.2 - Run your Provider API Pact Test](#step-432---run-your-provider-api-pact-test)
+  - [Step 5 - Missing Consumer Pact Test Cases](#step-5---missing-consumer-pact-test-cases)
 
 When writing a lot of small services, testing the interactions between these becomes a major headache.
 That's the problem Pact is trying to solve.
