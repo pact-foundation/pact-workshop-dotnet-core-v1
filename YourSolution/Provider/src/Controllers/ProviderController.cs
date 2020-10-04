@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
@@ -38,7 +35,7 @@ namespace Provider.Controllers
             {
                 parsedDateTime = DateTime.Parse(validDateTime);
             }
-            catch(Exception ex)
+            catch(Exception)
             {
                 return BadRequest(new { message = "validDateTime is not a date or time" });
             }
