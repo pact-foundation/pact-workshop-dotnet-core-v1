@@ -77,7 +77,7 @@ namespace tests.Middleware
                 string jsonRequestBody = String.Empty;
                 using (var reader = new StreamReader(context.Request.Body, Encoding.UTF8))
                 {
-                    jsonRequestBody = reader.ReadToEnd();
+                    jsonRequestBody = reader.ReadToEndAsync().Result;
                 }
 
                 var providerState = JsonConvert.DeserializeObject<ProviderState>(jsonRequestBody);
