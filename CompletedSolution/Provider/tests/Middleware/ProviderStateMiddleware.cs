@@ -58,7 +58,7 @@ namespace tests.Middleware
         {
             if (context.Request.Path.Value == "/provider-states")
             {
-                this.HandleProviderStatesRequest(context);
+                await this.HandleProviderStatesRequestAsync(context);
                 await context.Response.WriteAsync(String.Empty);
             }
             else
@@ -67,7 +67,7 @@ namespace tests.Middleware
             }
         }
 
-        private void HandleProviderStatesRequest(HttpContext context)
+        private async Task HandleProviderStatesRequestAsync(HttpContext context)
         {
             context.Response.StatusCode = (int)HttpStatusCode.OK;
 
@@ -77,7 +77,7 @@ namespace tests.Middleware
                 string jsonRequestBody = String.Empty;
                 using (var reader = new StreamReader(context.Request.Body, Encoding.UTF8))
                 {
-                    jsonRequestBody = reader.ReadToEnd();
+                    jsonRequestBody = await reader.ReadToEndAsync();
                 }
 
                 var providerState = JsonConvert.DeserializeObject<ProviderState>(jsonRequestBody);
