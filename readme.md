@@ -50,6 +50,15 @@ However before taking part in this workshop please make sure you have:
 * An account at [Github.com](www.github.com)!
 * A text editor/IDE that supports .NET Core. Check out [VSCode](https://code.visualstudio.com/)
 
+# Add the Pacflow Nuget repository to Visual Studio/NuGet.Config
+
+In order to use the 4.0.0-beta version of Pact.Net you need to add the Pacflow Nuget repository to Visual Studio and/or your Nuget.Config
+file so that the libraries can be downloaded.
+
+* For Visual Studio add `https://pactfoundation.jfrog.io/artifactory/api/nuget/default-nuget-local` as a Package Source
+* For NuGet.Config (found at %appdata%\NuGet\NuGet.Config (Windows) or ~/.config/NuGet/NuGet.Config (Mac/Linux)) add
+`<add key="ArtifactoryNuGetV3" value="https://pactfoundation.jfrog.io/artifactory/api/nuget/v3/default-nuget-local" protocolVersion="3" />`
+
 # Workshop Steps
 
 ## Step 1 - Fork the Repo & Explore the Code!
