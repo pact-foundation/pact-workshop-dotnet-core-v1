@@ -1,148 +1,120 @@
 using System;
+using System.Net;
+using System.Net.Http;
 using Xunit;
-using PactNet.Mocks.MockHttpService;
-using PactNet.Mocks.MockHttpService.Models;
 using Consumer;
-using System.Collections.Generic;
+using PactNet;
+using PactNet.Native;
+using Xunit.Abstractions;
+using Newtonsoft.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace tests
 {
-    public class ConsumerPactTests : IClassFixture<ConsumerPactClassFixture>
+    public class ConsumerPactTests
     {
-        private IMockProviderService _mockProviderService;
-        private string _mockProviderServiceBaseUri;
+        private IPactBuilderV3 pact;
 
-        public ConsumerPactTests(ConsumerPactClassFixture fixture)
+        public ConsumerPactTests(ITestOutputHelper output)
         {
-            _mockProviderService = fixture.MockProviderService;
-            _mockProviderService.ClearInteractions(); //NOTE: Clears any previously registered interactions before the test is run
-            _mockProviderServiceBaseUri = fixture.MockProviderServiceBaseUri;
+            var Config = new PactConfig
+            {
+                PactDir = @"..\..\..\..\..\pacts",
+                LogDir = @".\pact_logs",
+                Outputters = new[] { new XUnitOutput(output) },
+                DefaultJsonSettings = new JsonSerializerSettings
+                {
+                    ContractResolver = new CamelCasePropertyNamesContractResolver()
+                }
+            };
+
+            pact = Pact.V3("Consumer", "Provider", Config).UsingNativeBackend();
         }
 
         [Fact]
-        public void ItHandlesInvalidDateParam()
+        public async void ItHandlesInvalidDateParam()
         {
             // Arange
             var invalidRequestMessage = "validDateTime is not a date or time";
-            _mockProviderService.Given("There is data")
-                                .UponReceiving("A invalid GET request for Date Validation with invalid date parameter")
-                                .With(new ProviderServiceRequest 
-                                {
-                                    Method = HttpVerb.Get,
-                                    Path = "/api/provider",
-                                    Query = "validDateTime=lolz"
-                                })
-                                .WillRespondWith(new ProviderServiceResponse {
-                                    Status = 400,
-                                    Headers = new Dictionary<string, object>
-                                    {
-                                        { "Content-Type", "application/json; charset=utf-8" }
-                                    },
-                                    Body = new 
-                                    {
-                                        message = invalidRequestMessage
-                                    }
-                                });
+            pact.UponReceiving("A invalid GET request for Date Validation with invalid date parameter")
+                    .Given("There is data")
+                    .WithRequest(HttpMethod.Get, "/api/provider")
+                    .WithQuery("validDateTime", "lolz")
+                .WillRespond()
+                    .WithStatus(HttpStatusCode.BadRequest)
+                    .WithHeader("Content-Type", "application/json; charset=utf-8")
+                    .WithJsonBody(new { message = invalidRequestMessage });
 
-            // Act
-            var result = ConsumerApiClient.ValidateDateTimeUsingProviderApi("lolz", _mockProviderServiceBaseUri).GetAwaiter().GetResult();
-            var resultBodyText = result.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-
-            // Assert
-            Assert.Contains(invalidRequestMessage, resultBodyText);
+            // Act & Assert
+            await pact.VerifyAsync(async ctx => {
+                var response = await ConsumerApiClient.ValidateDateTimeUsingProviderApi("lolz", ctx.MockServerUri);
+                var body = await response.Content.ReadAsStringAsync();
+                Assert.Contains(invalidRequestMessage, body);
+            });
         }
 
         [Fact]
-        public void ItHandlesEmptyDateParam()
+        public async void ItHandlesEmptyDateParam()
         {
             // Arrange
             var invalidRequestMessage = "validDateTime is required";
-            _mockProviderService.Given("There is data")
-                                .UponReceiving("A invalid GET request for Date Validation with empty string date parameter")
-                                .With(new ProviderServiceRequest 
-                                {
-                                    Method = HttpVerb.Get,
-                                    Path = "/api/provider",
-                                    Query = "validDateTime="
-                                })
-                                .WillRespondWith(new ProviderServiceResponse {
-                                    Status = 400,
-                                    Headers = new Dictionary<string, object>
-                                    {
-                                        { "Content-Type", "application/json; charset=utf-8" }
-                                    },
-                                    Body = new 
-                                    {
-                                        message = invalidRequestMessage
-                                    }
-                                });
+            pact.UponReceiving("A invalid GET request for Date Validation with empty string date parameter")
+                    .Given("There is data")
+                    .WithRequest(HttpMethod.Get, "/api/provider")
+                    .WithQuery("validDateTime", "")
+                .WillRespond()
+                    .WithStatus(HttpStatusCode.BadRequest)
+                    .WithHeader("Content-Type", "application/json; charset=utf-8")
+                    .WithJsonBody(new { message = invalidRequestMessage });
 
-            // Act
-            var result = ConsumerApiClient.ValidateDateTimeUsingProviderApi(String.Empty, _mockProviderServiceBaseUri).GetAwaiter().GetResult();
-            var resultBodyText = result.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-
-            // Assert
-            Assert.Contains(invalidRequestMessage, resultBodyText);
+            // Act & Assert
+            await pact.VerifyAsync(async ctx => {
+                var response = await ConsumerApiClient.ValidateDateTimeUsingProviderApi(String.Empty, ctx.MockServerUri);
+                var body = await response.Content.ReadAsStringAsync();
+                Assert.Contains(invalidRequestMessage, body);
+            });
         }
 
         [Fact]
-        public void ItHandlesNoData()
+        public async void ItHandlesNoData()
         {
-            // Arrange
-            _mockProviderService.Given("There is no data")
-                                .UponReceiving("A valid GET request for Date Validation")
-                                .With(new ProviderServiceRequest 
-                                {
-                                    Method = HttpVerb.Get,
-                                    Path = "/api/provider",
-                                    Query = "validDateTime=04/04/2018"
-                                })
-                                .WillRespondWith(new ProviderServiceResponse {
-                                    Status = 404
-                                });
+            var validDate = "04/04/2018";
 
-            // Act
-            var result = ConsumerApiClient.ValidateDateTimeUsingProviderApi("04/04/2018", _mockProviderServiceBaseUri).GetAwaiter().GetResult();
-            var resultStatus = (int)result.StatusCode;
+            pact.UponReceiving("A valid GET request for Date Validation")
+                .Given("There is no data")
+                .WithRequest(HttpMethod.Get, "/api/provider")
+                .WithQuery("validDateTime", validDate)
+            .WillRespond()
+                .WithStatus(HttpStatusCode.NotFound);
 
-            // Assert
-            Assert.Equal(404, resultStatus);
+            // Act & Assert
+            await pact.VerifyAsync(async ctx => {
+                var response = await ConsumerApiClient.ValidateDateTimeUsingProviderApi(validDate, ctx.MockServerUri);
+                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            });
         }
 
         [Fact]
-        public void ItParsesADateCorrectly()
+        public async void ItParsesADateCorrectly()
         {
             var expectedDateString = "04/05/2018";
             var expectedDateParsed = DateTime.Parse(expectedDateString).ToString("dd-MM-yyyy HH:mm:ss");
 
-            // Arrange
-            _mockProviderService.Given("There is data")
-                                .UponReceiving("A valid GET request for Date Validation")
-                                .With(new ProviderServiceRequest 
-                                {
-                                    Method = HttpVerb.Get,
-                                    Path = "/api/provider",
-                                    Query = $"validDateTime={expectedDateString}"
-                                })
-                                .WillRespondWith(new ProviderServiceResponse {
-                                    Status = 200,
-                                    Headers = new Dictionary<string, object>
-                                    {
-                                        { "Content-Type", "application/json; charset=utf-8" }
-                                    },
-                                    Body = new 
-                                    {
-                                        test = "NO",
-                                        validDateTime = expectedDateParsed
-                                    }
-                                });
+            pact.UponReceiving("A valid GET request for Date Validation")
+                .Given("There is data")
+                .WithRequest(HttpMethod.Get, "/api/provider")
+                .WithQuery("validDateTime", expectedDateString)
+            .WillRespond()
+                .WithStatus(HttpStatusCode.OK)
+                .WithHeader("Content-Type", "application/json; charset=utf-8")
+                .WithJsonBody(new { test = "NO", validDateTime = expectedDateParsed });
 
-            // Act
-            var result = ConsumerApiClient.ValidateDateTimeUsingProviderApi(expectedDateString, _mockProviderServiceBaseUri).GetAwaiter().GetResult();
-            var resultBody = result.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-
-            // Assert
-            Assert.Contains(expectedDateParsed, resultBody);
+            // Act & Assert
+            await pact.VerifyAsync(async ctx => {
+                var response = await ConsumerApiClient.ValidateDateTimeUsingProviderApi(expectedDateString, ctx.MockServerUri);
+                var body = await response.Content.ReadAsStringAsync();
+                Assert.Contains(expectedDateParsed, body);
+            });
         }
     }
 }

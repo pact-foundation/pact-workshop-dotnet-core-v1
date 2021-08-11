@@ -9,21 +9,21 @@ namespace Consumer
         static void Main(string[] args)
         {
             string dateTimeToValidate = "05/01/2018";
-            string baseUri = "http://localhost:9000";
+            Uri baseUri = new Uri("http://localhost:9000");
 
             if(args.Length <= 1)
             {
                 Console.WriteLine("-------------------");
-                WriteoutArgsUsed(dateTimeToValidate, baseUri);
+                WriteoutArgsUsed(dateTimeToValidate, baseUri.AbsoluteUri);
                 WriteoutUsageInstructions();
                 Console.WriteLine("-------------------");
             }
             else
             {
                 dateTimeToValidate = args[0];
-                baseUri = args[1];
+                baseUri = new Uri(args[1]);
                 Console.WriteLine("-------------------");
-                WriteoutArgsUsed(dateTimeToValidate, baseUri);
+                WriteoutArgsUsed(dateTimeToValidate, baseUri.AbsoluteUri);
                 Console.WriteLine("-------------------");
             }
 

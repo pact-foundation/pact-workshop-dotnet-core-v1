@@ -1,3 +1,12 @@
-.vscode/
-bin/
-obj/
+# OSX
+**/.DS_Store
+
+# vim swap files
+**/*.swp
+
+# VS code
+**/.vs/
+
+# build output
+**/bin
+**/obj
