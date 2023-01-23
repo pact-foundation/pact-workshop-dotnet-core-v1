@@ -1,11 +1,11 @@
 
-# Running on Pactflow
+# Running on PactFlow
 
 Install the [Pact CLI tools](https://github.com/pact-foundation/pact-ruby-standalone/) and ensure they are on your `PATH`.
 
 The below commands are designed for a Linux/OSX environment, please translate for use on Windows/PowerShell as necessary:
 
-1. Sign up to a Pactflow account at https://pactflow.io/register.
+1. Sign up to a PactFlow account at https://pactflow.io/register.
 1. Grab a **read/write** API token from the "Settings > API Tokens" page
 1. Export the following into your shell before running
     ```
@@ -18,7 +18,7 @@ The below commands are designed for a Linux/OSX environment, please translate fo
     dotnet restore
     dotnet test
     ```
-1. Publish the contracts to Pactflow (ensure you're back in the projects' root directory)
+1. Publish the contracts to PactFlow (ensure you're back in the projects' root directory)
     ```
     pact-broker publish --consumer-app-version 1.0.0 --broker-base-url $PACT_BROKER_HOST --broker-token $PACT_BROKER_TOKEN ./pacts/consumer-provider.json --tag master
     ```
