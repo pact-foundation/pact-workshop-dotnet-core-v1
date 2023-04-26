@@ -1,10 +1,11 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using PactNet;
 using PactNet.Infrastructure.Outputters;
-using tests.XUnitHelpers;
+using PactNet.Output.Xunit;
+using PactNet.Verifier;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -43,20 +44,20 @@ namespace tests
                 // so a custom outputter is required.
                 Outputters = new List<IOutput>
                                 {
-                                    new XUnitOutput(_outputHelper)
+                                    new XunitOutput(_outputHelper)
                                 },
 
                 // Output verbose verification logs to the test output
-                Verbose = true
+                LogLevel = PactNet.PactLogLevel.Debug
             };
 
             //Act / Assert
             IPactVerifier pactVerifier = new PactVerifier(config);
-            pactVerifier.ProviderState($"{_pactServiceUri}/provider-states")
-                .ServiceProvider("Provider", _providerUri)
-                .HonoursPactWith("Consumer")
-                .PactUri(@"..\..\..\..\..\pacts\consumer-provider.json")
-                .Verify();
+            var pactFile = new FileInfo(Path.Join("..", "..", "..", "..", "..", "pacts", "Consumer-Provider.json"));
+            pactVerifier.ServiceProvider("Provider", new Uri(_providerUri))
+            .WithFileSource(pactFile)
+            .WithProviderStateUrl(new Uri($"{_pactServiceUri}/provider-states"))
+            .Verify();
         }
 
         #region IDisposable Support
