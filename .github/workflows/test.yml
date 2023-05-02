@@ -1,0 +1,59 @@
+name: test
+
+on:   
+  push:
+    branches: [master, workshop_scenario_datetime]
+  pull_request:
+    branches: [master, workshop_scenario_datetime]
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build-dotnet:
+    name: "Build and Test (dotnet)"
+    env:
+      PACT_DO_NOT_TRACK: true
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-latest
+          - ubuntu-latest
+          - macos-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "6.0.x" # runners already have .Net Framework installed as well
+
+      - name: Completed Solution - Consumer Restore
+        run: dotnet restore
+        working-directory: CompletedSolution/Consumer/src
+      - name: Completed Solution - Run Pact Consumer Tests
+        run: dotnet test
+        working-directory: CompletedSolution/Consumer/tests
+      - name: Step 3 - Show Pact File
+        run: cat pacts/Consumer-Provider.json
+        working-directory: CompletedSolution
+      - name: Completed Solution - Provider Restore
+        run: dotnet restore
+        working-directory: CompletedSolution/Provider/src
+        continue-on-error: true
+      - name: Completed Solution - Run Pact Consumer Tests
+        run: |
+          cd Provider/src && dotnet run & pid=$! && sleep 10
+          cd Provider/tests && dotnet test
+        working-directory: CompletedSolution
+      - name: Completed Solution - Run E2E
+        run: |
+          cd Provider/src && dotnet run & pid=$! && sleep 10
+          cd Consumer/src && dotnet run
+        working-directory: CompletedSolution

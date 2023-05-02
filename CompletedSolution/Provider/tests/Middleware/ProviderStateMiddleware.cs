@@ -56,9 +56,9 @@ namespace tests.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            if (context.Request.Path.Value == "/provider-states")
+            if (context.Request.Path.StartsWithSegments("/provider-states"))
             {
-                await this.HandleProviderStatesRequestAsync(context);
+                await this.HandleProviderStatesRequest(context);
                 await context.Response.WriteAsync(String.Empty);
             }
             else
@@ -67,7 +67,8 @@ namespace tests.Middleware
             }
         }
 
-        private async Task HandleProviderStatesRequestAsync(HttpContext context)
+
+        private async Task HandleProviderStatesRequest(HttpContext context)
         {
             context.Response.StatusCode = (int)HttpStatusCode.OK;
 
@@ -83,8 +84,7 @@ namespace tests.Middleware
                 var providerState = JsonConvert.DeserializeObject<ProviderState>(jsonRequestBody);
 
                 //A null or empty provider state key must be handled
-                if (providerState != null && !String.IsNullOrEmpty(providerState.State) &&
-                    providerState.Consumer == ConsumerName)
+                if (providerState != null && !String.IsNullOrEmpty(providerState.State))
                 {
                     _providerStates[providerState.State].Invoke();
                 }
