@@ -206,7 +206,7 @@ namespace tests
     // This class is responsible for setting up a shared
     // mock server for Pact used by all the tests.
     // XUnit can use a Class Fixture for this.
-    // See: https://goo.gl/hSq4nv
+    // See: https://xunit.net/docs/shared-context
     public class ConsumerPactClassFixture
     {
     }
@@ -231,7 +231,7 @@ namespace tests
     // This class is responsible for setting up a shared
     // mock server for Pact used by all the tests.
     // XUnit can use a Class Fixture for this.
-    // See: https://goo.gl/hSq4nv
+    // See: https://xunit.net/docs/shared-context
     public class ConsumerPactClassFixture
     {
         public IPactBuilder PactBuilder { get; private set; }
@@ -257,7 +257,7 @@ namespace tests
     // This class is responsible for setting up a shared
     // mock server for Pact used by all the tests.
     // XUnit can use a Class Fixture for this.
-    // See: https://goo.gl/hSq4nv
+    // See: https://xunit.net/docs/shared-context
     public class ConsumerPactClassFixture
     {
         public IPactBuilder PactBuilder { get; private set; }
@@ -268,7 +268,7 @@ namespace tests
 
         public ConsumerPactClassFixture()
         {
-            // Using Spec version 2.0.0 more details at https://goo.gl/UrBSRc
+            // Using Spec version 2.0.0 more details at https://github.com/pact-foundation/pact-specification
             var pactConfig = new PactConfig
             {
                 SpecificationVersion = "2.0.0",
@@ -308,7 +308,7 @@ namespace tests
     // This class is responsible for setting up a shared
     // mock server for Pact used by all the tests.
     // XUnit can use a Class Fixture for this.
-    // See: https://goo.gl/hSq4nv
+    // See: https://xunit.net/docs/shared-context
     public class ConsumerPactClassFixture
     {
         public IPactBuilder PactBuilder { get; private set; }
@@ -319,7 +319,7 @@ namespace tests
 
         public ConsumerPactClassFixture()
         {
-            // Using Spec version 2.0.0 more details at https://goo.gl/UrBSRc
+            // Using Spec version 2.0.0 more details at https://github.com/pact-foundation/pact-specification
             var pactConfig = new PactConfig
             {
                 SpecificationVersion = "2.0.0",
@@ -363,7 +363,7 @@ namespace tests
     // This class is responsible for setting up a shared
     // mock server for Pact used by all the tests.
     // XUnit can use a Class Fixture for this.
-    // See: https://goo.gl/hSq4nv
+    // See: https://xunit.net/docs/shared-context
     public class ConsumerPactClassFixture : IDisposable
     {
         public IPactBuilder PactBuilder { get; private set; }
@@ -374,7 +374,7 @@ namespace tests
 
         public ConsumerPactClassFixture()
         {
-            // Using Spec version 2.0.0 more details at https://goo.gl/UrBSRc
+            // Using Spec version 2.0.0 more details at https://github.com/pact-foundation/pact-specification
             var pactConfig = new PactConfig
             {
                 SpecificationVersion = "2.0.0",
