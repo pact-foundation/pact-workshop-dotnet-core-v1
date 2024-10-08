@@ -1,3 +1,5 @@
 .vscode/
 bin/
 obj/
+pacts/
+data/

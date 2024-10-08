@@ -52,9 +52,9 @@ namespace tests
             };
 
             //Act / Assert
-            IPactVerifier pactVerifier = new PactVerifier(config);
+            IPactVerifier pactVerifier = new PactVerifier("Provider", config);
             var pactFile = new FileInfo(Path.Join("..", "..", "..", "..", "..", "pacts", "Consumer-Provider.json"));
-            pactVerifier.ServiceProvider("Provider", new Uri(_providerUri))
+            pactVerifier.WithHttpEndpoint(new Uri(_providerUri))
             .WithFileSource(pactFile)
             .WithProviderStateUrl(new Uri($"{_pactServiceUri}/provider-states"))
             .Verify();

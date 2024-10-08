@@ -1,8 +1,11 @@
+using System.Collections.Generic;
+
 namespace tests.Middleware
 {
-    public class ProviderState
-    {
-        public string Consumer { get; set; }
-        public string State { get; set; }
-    }
+    /// <summary>
+    /// Provider state DTO
+    /// </summary>
+    /// <param name="State">State description</param>
+    /// <param name="Params">State parameters</param>
+    public record ProviderState(string State, IDictionary<string, object> Params);
 }

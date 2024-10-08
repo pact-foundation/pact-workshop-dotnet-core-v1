@@ -27,12 +27,12 @@ jobs:
           - macos-latest
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup .NET Core SDK
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "6.0.x" # runners already have .Net Framework installed as well
+          dotnet-version: "8.0.x" # runners already have .Net Framework installed as well
 
       - name: Completed Solution - Consumer Restore
         run: dotnet restore
@@ -47,7 +47,7 @@ jobs:
         run: dotnet restore
         working-directory: CompletedSolution/Provider/src
         continue-on-error: true
-      - name: Completed Solution - Run Pact Consumer Tests
+      - name: Completed Solution - Run Pact Provider Tests
         run: |
           cd Provider/src && dotnet run & pid=$! && sleep 10
           cd Provider/tests && dotnet test
