@@ -47,6 +47,13 @@ namespace tests.Middleware
         private async Task AddData(IDictionary<string, object> parameters)
         {
             string path = Path.Combine(Directory.GetCurrentDirectory(), @"../../../../../data");
+
+            // Create the directory if it doesn't exist
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+
             var writePath = Path.Combine(path, "somedata.txt");
 
             if (!File.Exists(writePath))
