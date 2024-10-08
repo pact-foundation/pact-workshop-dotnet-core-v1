@@ -1,25 +1,38 @@
 # Example .NET Core Project for Pact Workshop
 
+- [Example .NET Core Project for Pact Workshop](#example-net-core-project-for-pact-workshop)
 - [Prerequisites](#prerequisites)
 - [Workshop Steps](#workshop-steps)
-  - [Step 1 - Fork the Repo & Explore the Code!](#step-1---fork-the-repo--explore-the-code)
+  - [Step 1 - Fork the Repo \& Explore the Code!](#step-1---fork-the-repo--explore-the-code)
     - [CompletedSolution](#completedsolution)
     - [YourSolution](#yoursolution)
   - [Step 2 - Understanding The Consumer Project](#step-2---understanding-the-consumer-project)
     - [Step 2.1 - Start the Provider API Locally](#step-21---start-the-provider-api-locally)
+      - [NB: Potential Error](#nb-potential-error)
     - [Step 2.2 - Execute the Consumer](#step-22---execute-the-consumer)
   - [Step 3 - Testing the Consumer Project with Pact](#step-3---testing-the-consumer-project-with-pact)
     - [Step 3.1 - Creating a Test Project for Consumer with XUnit](#step-31---creating-a-test-project-for-consumer-with-xunit)
+      - [NB - Multiple OS Environments](#nb---multiple-os-environments)
     - [Step 3.2 - Configuring the Mock HTTP Pact Server on the Consumer](#step-32---configuring-the-mock-http-pact-server-on-the-consumer)
+      - [Step 3.2.1 - Setup using PactBuilder](#step-321---setup-using-pactbuilder)
+      - [Step 3.2.2 Tearing Down the Pact Mock HTTP Server \& Generating the Pact File](#step-322-tearing-down-the-pact-mock-http-server--generating-the-pact-file)
     - [Step 3.3 - Creating Your First Pact Test for the Consumer Client](#step-33---creating-your-first-pact-test-for-the-consumer-client)
+      - [Step 3.3.1 - Mocking an Interaction with the Provider](#step-331---mocking-an-interaction-with-the-provider)
+      - [Step 3.3.2 - Completing Your First Consumer Test](#step-332---completing-your-first-consumer-test)
   - [Step 4 - Testing the Provider Project with Pact](#step-4---testing-the-provider-project-with-pact)
     - [Step 4.1 - Creating a Provider State HTTP Server](#step-41---creating-a-provider-state-http-server)
+      - [Step 4.1.1 - Creating a Basic Web API to Manage Provider State](#step-411---creating-a-basic-web-api-to-manage-provider-state)
+      - [Step 4.1.2 - Creating a The Provider State Middleware](#step-412---creating-a-the-provider-state-middleware)
+        - [Step 4.1.2.1 - Creating the ProviderState Class](#step-4121---creating-the-providerstate-class)
+        - [Step 4.1.2.2 - Creating the ProviderStateMiddleware Class](#step-4122---creating-the-providerstatemiddleware-class)
+      - [Step 4.1.2 - Starting the Provider States API When the Pact Tests Start](#step-412---starting-the-provider-states-api-when-the-pact-tests-start)
     - [Step 4.2 - Creating the Provider API Pact Test](#step-42---creating-the-provider-api-pact-test)
     - [Step 4.2.1 - Creating the XUnitOutput Class](#step-421---creating-the-xunitoutput-class)
     - [Step 4.3 - Running Your Provider API Pact Test](#step-43---running-your-provider-api-pact-test)
     - [Step 4.3.1 - Start Your Provider API Locally](#step-431---start-your-provider-api-locally)
     - [Step 4.3.2 - Run your Provider API Pact Test](#step-432---run-your-provider-api-pact-test)
   - [Step 5 - Missing Consumer Pact Test Cases](#step-5---missing-consumer-pact-test-cases)
+- [Copyright Notice \& Licence](#copyright-notice--licence)
 
 When writing a lot of small services, testing the interactions between these becomes a major headache.
 That's the problem Pact is trying to solve.
@@ -147,20 +160,12 @@ navigate to ```[RepositoryRoot]/YourSolution/Consumer/tests``` and run:
 dotnet new xunit
 ```
 
-This will create an empty XUnit project with all the references you need... expect Pact. Depending on what OS you are completing this workshop on you will need
-to run one of the following commands:
+This will create an empty XUnit project with all the references you need... expect Pact. 
+
+Run the following to add Pact-Net to your project
 
 ```
-# Windows
-dotnet add package PactNet.Windows --version 2.2.1
-
-# OSX
-dotnet add package PactNet.OSX --version 2.2.1
-
-# Linux
-dotnet add package PactNet.Linux.x64 --version 2.2.1
-# Or...
-dotnet add package PactNet.Linux.x86 --version 2.2.1
+dotnet add package PactNet
 ```
 
 Finally you will need to add a reference to the Consumer Client project src code. So again
@@ -614,26 +619,11 @@ command line and create another new XUnit project by running the command
 the PactNet package using one of the command line commands below:
 
 ```
-# Windows
-dotnet add package PactNet.Windows --version 2.2.1
-
-# OSX
-dotnet add package PactNet.OSX --version 2.2.1
-
-# Linux
-dotnet add package PactNet.Linux.x64 --version 2.2.1
-# Or...
-dotnet add package PactNet.Linux.x86 --version 2.2.1
+dotnet add package PactNet
 ```
 
 Finally your Provider Pact Test project will need to run its own web server during tests
-which will be covered in more detail in the next step but for now, let's get the
-```Microsoft.AspNetCore.All``` package which we will need to run this server. Run the 
-command below to add it to your project:
-
-```
-dotnet add package Microsoft.AspNetCore.All --version 2.0.3
-```
+which will be covered in more detail in the next step but for now.
 
 With all the packages added to our Provider API test project, we are ready to move onto
 the next step; creating an HTTP Server to manage test environment state.
@@ -715,13 +705,16 @@ and create a file and corresponding class called ```ProviderState.cs``` and add 
 following code:
 
 ```csharp
+using System.Collections.Generic;
+
 namespace tests.Middleware
 {
-    public class ProviderState
-    {
-        public string Consumer { get; set; }
-        public string State { get; set; }
-    }
+    /// <summary>
+    /// Provider state DTO
+    /// </summary>
+    /// <param name="State">State description</param>
+    /// <param name="Params">State parameters</param>
+    public record ProviderState(string State, IDictionary<string, object> Params);
 }
 ```
 
@@ -745,54 +738,65 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace tests.Middleware
 {
     public class ProviderStateMiddleware
     {
-        private const string ConsumerName = "Consumer";
+
+        private static readonly JsonSerializerOptions Options = new()
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
         private readonly RequestDelegate _next;
-        private readonly IDictionary<string, Action> _providerStates;
 
-        public ProviderStateMiddleware(RequestDelegate next)
-        {
-            _next = next;
-        }
+        private readonly IDictionary<string, Func<IDictionary<string, object>, Task>> _providerStates;
 
-        public async Task Invoke(HttpContext context)
+        /// <summary>
+        /// Handle the request
+        /// </summary>
+        /// <param name="context">Request context</param>
+        /// <returns>Awaitable</returns>
+        public async Task InvokeAsync(HttpContext context)
         {
-            if (context.Request.Path.Value == "/provider-states")
+
+            if (!(context.Request.Path.Value?.StartsWith("/provider-states") ?? false))
             {
-                this.HandleProviderStatesRequest(context);
-                await context.Response.WriteAsync(String.Empty);
+                await this._next.Invoke(context);
+                return;
             }
-            else
-            {
-                await this._next(context);
-            }
-        }
 
-        private void HandleProviderStatesRequest(HttpContext context)
-        {
-            context.Response.StatusCode = (int)HttpStatusCode.OK;
+            context.Response.StatusCode = StatusCodes.Status200OK;
 
-            if (context.Request.Method.ToUpper() == HttpMethod.Post.ToString().ToUpper() &&
-                context.Request.Body != null)
+
+            if (context.Request.Method == HttpMethod.Post.ToString().ToUpper())
             {
-                string jsonRequestBody = String.Empty;
+                string jsonRequestBody;
+
                 using (var reader = new StreamReader(context.Request.Body, Encoding.UTF8))
                 {
-                    jsonRequestBody = reader.ReadToEnd();
+                    jsonRequestBody = await reader.ReadToEndAsync();
                 }
 
-                var providerState = JsonConvert.DeserializeObject<ProviderState>(jsonRequestBody);
-
-                //A null or empty provider state key must be handled
-                if (providerState != null && !String.IsNullOrEmpty(providerState.State) &&
-                    providerState.Consumer == ConsumerName)
+                try
                 {
-                    _providerStates[providerState.State].Invoke();
+
+                    ProviderState providerState = JsonSerializer.Deserialize<ProviderState>(jsonRequestBody, Options);
+
+                    if (!string.IsNullOrEmpty(providerState?.State))
+                    {
+                        await this._providerStates[providerState.State].Invoke(providerState.Params);
+                    }
+                }
+                catch (Exception e)
+                {
+                    context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                    await context.Response.WriteAsync("Failed to deserialise JSON provider state body:");
+                    await context.Response.WriteAsync(jsonRequestBody);
+                    await context.Response.WriteAsync(string.Empty);
+                    await context.Response.WriteAsync(e.ToString());
                 }
             }
         }
@@ -820,49 +824,41 @@ by our Consumer Pact test but could be if some more test cases were added ;).
 The code for this looks like:
 
 ```csharp
-public class ProviderStateMiddleware
-{
-    private const string ConsumerName = "Consumer";
-    private readonly RequestDelegate _next;
-    private readonly IDictionary<string, Action> _providerStates;
-
-    public ProviderStateMiddleware(RequestDelegate next)
-    {
-        _next = next;
-        _providerStates = new Dictionary<string, Action>
+        public ProviderStateMiddleware(RequestDelegate next)
         {
+            _next = next;
+            _providerStates = new Dictionary<string, Func<IDictionary<string, object>, Task>>
             {
-                "There is no data",
-                RemoveAllData
-            },
+
+                ["There is no data"] = RemoveAllData,
+                ["There is data"] = AddData
+            };
+        }
+
+        private async Task RemoveAllData(IDictionary<string, object> parameters)
+        {
+            string path = Path.Combine(Directory.GetCurrentDirectory(), @"../../../../../data");
+            var deletePath = Path.Combine(path, "somedata.txt");
+
+            if (File.Exists(deletePath))
             {
-                "There is data",
-                AddData
+                await Task.Run(() => File.Delete(deletePath));
             }
-        };
-    }
-
-    private void RemoveAllData()
-    {
-        string path = Path.Combine(Directory.GetCurrentDirectory(), @"../../../../../data");
-        var deletePath = Path.Combine(path, "somedata.txt");
-
-        if (File.Exists(deletePath))
-        {
-            File.Delete(deletePath);
         }
-    }
 
-    private void AddData()
-    {
-        string path = Path.Combine(Directory.GetCurrentDirectory(), @"../../../../../data");
-        var writePath = Path.Combine(path, "somedata.txt");
-
-        if (!File.Exists(writePath))
+        private async Task AddData(IDictionary<string, object> parameters)
         {
-            File.Create(writePath);
+            string path = Path.Combine(Directory.GetCurrentDirectory(), @"../../../../../data");
+            var writePath = Path.Combine(path, "somedata.txt");
+
+            if (!File.Exists(writePath))
+            {
+                using (var fileStream = new FileStream(writePath, FileMode.CreateNew))
+                {
+                    await fileStream.FlushAsync();
+                }
+            }
         }
-    }
 ```
 
 Now we have initialised our ```_providerStates``` field with the two states which map to
@@ -896,87 +892,101 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace tests.Middleware
 {
     public class ProviderStateMiddleware
     {
-        private const string ConsumerName = "Consumer";
+
+        private static readonly JsonSerializerOptions Options = new()
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
         private readonly RequestDelegate _next;
-        private readonly IDictionary<string, Action> _providerStates;
+
+        private readonly IDictionary<string, Func<IDictionary<string, object>, Task>> _providerStates;
 
         public ProviderStateMiddleware(RequestDelegate next)
         {
             _next = next;
-            _providerStates = new Dictionary<string, Action>
+            _providerStates = new Dictionary<string, Func<IDictionary<string, object>, Task>>
             {
-                {
-                    "There is no data",
-                    RemoveAllData
-                },
-                {
-                    "There is data",
-                    AddData
-                }
+
+                ["There is no data"] = RemoveAllData,
+                ["There is data"] = AddData
             };
         }
 
-        private void RemoveAllData()
+        private async Task RemoveAllData(IDictionary<string, object> parameters)
         {
             string path = Path.Combine(Directory.GetCurrentDirectory(), @"../../../../../data");
             var deletePath = Path.Combine(path, "somedata.txt");
 
             if (File.Exists(deletePath))
             {
-                File.Delete(deletePath);
+                await Task.Run(() => File.Delete(deletePath));
             }
         }
 
-        private void AddData()
+        private async Task AddData(IDictionary<string, object> parameters)
         {
             string path = Path.Combine(Directory.GetCurrentDirectory(), @"../../../../../data");
             var writePath = Path.Combine(path, "somedata.txt");
 
             if (!File.Exists(writePath))
             {
-                File.Create(writePath);
+                using (var fileStream = new FileStream(writePath, FileMode.CreateNew))
+                {
+                    await fileStream.FlushAsync();
+                }
             }
         }
 
-        public async Task Invoke(HttpContext context)
+        /// <summary>
+        /// Handle the request
+        /// </summary>
+        /// <param name="context">Request context</param>
+        /// <returns>Awaitable</returns>
+        public async Task InvokeAsync(HttpContext context)
         {
-            if (context.Request.Path.Value == "/provider-states")
-            {
-                this.HandleProviderStatesRequest(context);
-                await context.Response.WriteAsync(String.Empty);
-            }
-            else
-            {
-                await this._next(context);
-            }
-        }
 
-        private void HandleProviderStatesRequest(HttpContext context)
-        {
-            context.Response.StatusCode = (int)HttpStatusCode.OK;
-
-            if (context.Request.Method.ToUpper() == HttpMethod.Post.ToString().ToUpper() &&
-                context.Request.Body != null)
+            if (!(context.Request.Path.Value?.StartsWith("/provider-states") ?? false))
             {
-                string jsonRequestBody = String.Empty;
+                await this._next.Invoke(context);
+                return;
+            }
+
+            context.Response.StatusCode = StatusCodes.Status200OK;
+
+
+            if (context.Request.Method == HttpMethod.Post.ToString().ToUpper())
+            {
+                string jsonRequestBody;
+
                 using (var reader = new StreamReader(context.Request.Body, Encoding.UTF8))
                 {
-                    jsonRequestBody = reader.ReadToEnd();
+                    jsonRequestBody = await reader.ReadToEndAsync();
                 }
 
-                var providerState = JsonConvert.DeserializeObject<ProviderState>(jsonRequestBody);
-
-                //A null or empty provider state key must be handled
-                if (providerState != null && !String.IsNullOrEmpty(providerState.State) &&
-                    providerState.Consumer == ConsumerName)
+                try
                 {
-                    _providerStates[providerState.State].Invoke();
+
+                    ProviderState providerState = JsonSerializer.Deserialize<ProviderState>(jsonRequestBody, Options);
+
+                    if (!string.IsNullOrEmpty(providerState?.State))
+                    {
+                        await this._providerStates[providerState.State].Invoke(providerState.Params);
+                    }
+                }
+                catch (Exception e)
+                {
+                    context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                    await context.Response.WriteAsync("Failed to deserialise JSON provider state body:");
+                    await context.Response.WriteAsync(jsonRequestBody);
+                    await context.Response.WriteAsync(string.Empty);
+                    await context.Response.WriteAsync(e.ToString());
                 }
             }
         }
@@ -1097,9 +1107,9 @@ public void EnsureProviderApiHonoursPactWithConsumer()
     };
 
     //Act / Assert
-    IPactVerifier pactVerifier = new PactVerifier(config);
+    IPactVerifier pactVerifier = new PactVerifier("Provider", config);
     pactVerifier.ProviderState($"{_pactServiceUri}/provider-states")
-        .ServiceProvider("Provider", _providerUri)
+        .WithHttpEndpoint(_providerUri)
         .HonoursPactWith("Consumer")
         .PactUri(@"..\..\..\..\..\pacts\consumer-provider.json")
         .Verify();
@@ -1108,9 +1118,9 @@ public void EnsureProviderApiHonoursPactWithConsumer()
 
 The **Act/Assert** part of this test creates a new
 [PactVerifier](https://github.com/pact-foundation/pact-net/blob/master/PactNet/PactVerifier.cs)
-instance which first uses a call to ```ProviderState``` to know where our Provider States
-API is hosted. Next, the ```ServiceProvider``` method takes the name of the Provider being
-verified in our case **Provider** and a URI to where it is hosted. Then the
+instance setup with the name of the Provider being verified in our case **Provider** and the Pact config.
+We then use a builder pattern, which first uses a call to ```ProviderState``` to know where our Provider States
+API is hosted. Next, the ```WithHttpEndpoint``` method takes a URI to where it is hosted. Then the
 ```HonoursPactWith()``` method tells Pact the name of the consumer that generated the Pact
 which needs to be verified with the Provider API - in our case **Consumer**.  Finally, in
 our workshop, we point Pact directly to the Pact File (instead of hosting elsewhere) and 
@@ -1123,36 +1133,33 @@ However there is one last step - the test currently doesn't compile as the
 ### Step 4.2.1 - Creating the XUnitOutput Class
 
 As noted by the comment in ```ProviderApiTests``` XUnit doesn't capture the output we want
-to show in the console to tell us if a test run as passed or failed. So first create the
-folder ```[RepositoryRoot]/YourSolution/Provider/tests/XUnitHelpers``` and inside create
-the file ```XUnitOutput.cs``` and the corresponding class which should look like:
+to show in the console to tell us if a test run as passed or failed.
 
-```csharp
-using PactNet.Infrastructure.Outputters;
-using Xunit.Abstractions;
+Run the following to add PactNet.Output.Xunit outputter to your project
 
-namespace tests.XUnitHelpers
-{
-    public class XUnitOutput : IOutput
-    {
-        private readonly ITestOutputHelper _output;
-
-        public XUnitOutput(ITestOutputHelper output)
-        {
-            _output = output;
-        }
-
-        public void WriteLine(string line)
-        {
-            _output.WriteLine(line);
-        }
-    }
-}
+```
+dotnet add package PactNet.Output.Xunit
 ```
 
-This class will ensure the output from Pact is displayed in the console. How this works
-is beyond the scope of this workshop but you can read more at
-[Capturing Output](https://xunit.github.io/docs/capturing-output.html).
+In your Provider test, add the outputter to the Pact Verifier Config
+
+
+```csharp
+var config = new PactVerifierConfig
+{
+
+    // NOTE: We default to using a ConsoleOutput,
+    // however xUnit 2 does not capture the console output,
+    // so a custom outputter is required.
+    Outputters = new List<IOutput>
+                    {
+                        new XunitOutput(_outputHelper)
+                    },
+
+    // Output verbose verification logs to the test output
+    LogLevel = PactNet.PactLogLevel.Debug
+};
+```
 
 ### Step 4.3 - Running Your Provider API Pact Test
 
