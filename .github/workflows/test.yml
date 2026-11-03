@@ -30,7 +30,7 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Setup .NET Core SDK
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6
         with:
           dotnet-version: "8.0.x" # runners already have .Net Framework installed as well
 
